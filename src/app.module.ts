@@ -3,11 +3,11 @@ import { VideoModule } from './video/video.module';
 import { S3Service } from './shared/s3.service';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    VideoModule, 
-    AuthModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,  // Lê a variável de ambiente DB_HOST
@@ -18,6 +18,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       entities: [__dirname + '/**/*.entity{.ts,.js}'], // Localização das entidades
       synchronize: true,  // Cuidado com isso em produção
     }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'defaultSecret',  // Aqui você deve definir a chave secreta
+      signOptions: { expiresIn: '6h', algorithm: 'RS256' },  // Defina o tempo de expiração do JWT, por exemplo, 1 hora
+    }),
+    VideoModule, 
+    AuthModule,
+    UserModule,
   ],
   controllers: [],
   providers: [S3Service],
