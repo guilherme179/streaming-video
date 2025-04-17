@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IUser } from 'src/auth/dto/auth-user.dto';
+import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';  // Supondo que você tenha uma entidade User configurada
 
@@ -16,14 +17,19 @@ export class UserService {
   }
 
   // Criar um novo usuário
-  async create(userData: any): Promise<User[]> {
+  async create(userData: any): Promise<User> {
     const user = this.userRepository.create(userData);
-    return this.userRepository.save(user);
+    const result = await this.userRepository.save(user);  // `result` já é um único usuário
+
+    // Se result for um array, retorna o primeiro item
+    return Array.isArray(result) ? result[0] : result;
   }
+
 
   // Atualizar um usuário
   async update(id: any, userData: any): Promise<User | null> {
     await this.userRepository.update(id, userData);
-    return this.userRepository.findOne(id);
+    const result = this.userRepository.findOne(id);
+    return result
   }
 }
