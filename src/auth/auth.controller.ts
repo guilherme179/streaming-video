@@ -2,6 +2,8 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { GoogleAuthGuard } from './google-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt'; 
+import { Response } from 'express';
+import { sign } from 'jsonwebtoken';
 
 @Controller('auth')
 export class AuthController {
@@ -27,10 +29,14 @@ export class AuthController {
     const savedUser = await this.authService.saveOrUpdateUser(user);
 
     // Gerar o JWT para o usuário
-    const payload = { username: savedUser.name, sub: savedUser.id }; // Payload do JWT
-    const jwtToken = this.jwtService.sign(payload);
+    const payload = { name: savedUser.name, sub: savedUser.id, email: savedUser.email, profilePicture: savedUser.profilePicture }; // Payload do JWT
+
+    // Use a chave secreta definida no JwtModule para assinar o token
+    const secret = process.env.JWT_SECRET != null ? process.env.JWT_SECRET : '';
+    console.log(secret)
+    const token = sign(payload, secret, { algorithm: 'HS256' }); // Chave secreta configurada no .env
 
     // Retorne o token JWT para o frontend (ou redirecione para uma página protegida)
-    return res.json({ access_token: jwtToken });
+    return res.json({ access_token: token });
   }
 }
